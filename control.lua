@@ -132,17 +132,16 @@ local function direction_correction(entity, player_index, skip_recheck)
         end
     end
 
-    -- Only horizontal rails
-    if entity_type:find("rail") then
-        if entity_type == "straight-rail" then
-            if not is_rail_facing_east(entity) then
-                game.players[player_index].mine_entity(entity,true)
-                squash_undo_actions(player_index)
-                end
-        else
-            game.players[player_index].mine_entity(entity,true)
+    -- Only horizontal rails. Mined back to the player who built it; destroyed if no player (script builds).
+    if entity_type:find("rail") and not (entity_type == "straight-rail" and is_rail_facing_east(entity)) then
+        local player = player_index and game.get_player(player_index)
+        if player then
+            player.mine_entity(entity, true)
             squash_undo_actions(player_index)
+        else
+            entity.destroy()
         end
+        return
     end
 
     if entity_not_allowed_south[entity_type] then
