@@ -12,7 +12,7 @@ Factorio challenge mod "Down Bad": items (and optionally players) may never move
 
 ## How control.lua works
 
-Player-facing rules and known gaps are in [README.md](README.md#the-rules); keep them in sync.
+Player-facing rules and known gaps are in [README.md](README.md#the-rules); open work and design decisions in [docs/queue.md](docs/queue.md). Keep both in sync.
 
 - `direction_correction(entity, player_index)` runs on every build event (player, robot, space platform, script, clone) and on player rotate/flip. `player_index` is nil for non-player builds. Ghosts are handled via `ghost_type` / `ghost_prototype`.
   - `entity_not_allowed_south` types facing south get one `entity.rotate()` (2×1 entities and loaders flip 180°, loaders also swap input/output); still south → `remove_entity`.
