@@ -16,6 +16,25 @@ Belts, inserters, loaders, and anything else that transfers items can only move 
 
 It turns out avoiding one direction makes factory design a lot harder than you'd expect.
 
+## The rules
+
+* **Belts, splitters, undergrounds, loaders, pumps and mining drills** can't face south. Place one facing south and it gets turned around.
+* **Inserters** can't drop south of where they pick up.
+* **Trains** run east-west only: straight horizontal rail is allowed; curves, diagonals and elevated rail are removed. Signals and stops work as normal.
+* **Logistic bots** never deliver south. A requester or buffer chest (or rocket silo) only requests while it's level with or north of every chest in its network that could supply it. Build a provider north of it and it shuts off until that provider is gone. Buffer chests only count for requesters set to "request from buffer chests".
+* **Optional:** turn off "Allow players to move down" in the map settings and you can't walk or drive south either.
+
+### Known gaps
+
+Bots still fly south in a few cases the mod can't control:
+
+* Construction bots carrying building materials to ghosts.
+* Personal logistics: bots delivering to your character or spidertron.
+* Trash: bots taking unwanted items from players, spidertrons and active providers to storage chests.
+* Roboports handing out repair packs.
+
+Fluids flow through pipes in any direction; only pumps are restricted.
+
 ## Factorio Mod Portal
 
 Preview images and downloads are available on the Factorio Mod Portal:
@@ -23,14 +42,7 @@ https://mods.factorio.com/mod/down-bad
 
 ## Compatibility
 
-* Compatible with vanilla Factorio.
-
-## Roadmap
-
-Things I'd like to add in the future:
-
-* Restricting bots to only take and drop off items in a non-southern direction
-
+* Factorio 2.1, with or without Space Age.
 ## Bugs / Issues
 
 None!

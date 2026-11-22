@@ -12,24 +12,22 @@ Factorio challenge mod "Down Bad": items (and optionally players) may never move
 
 ## How control.lua works
 
-- `direction_correction(entity, player_index)` runs on `on_built_entity`, `on_player_rotated_entity` and `on_player_flipped_entity`. Ghosts are handled via `ghost_type` / `ghost_prototype`.
-  - Belts, undergrounds, splitters, pumps, drills (`entity_not_allowed_south`) facing south get rotated once with `entity.rotate{by_player=...}`; still south → `error()`.
-  - Inserters: custom-vector inserters get pickup/drop swapped if they go straight top→bottom; others are rotated until not dropping south.
-  - Rails: only east/west straight rails survive; everything else is mined back to the player.
-  - Requester points are disabled on everything except characters, spidertrons, landing pads and platform hubs (bots can't be stopped flying south, so requests are cut instead). Cars also lose logistic sections.
+Player-facing rules and known gaps are in [README.md](README.md#the-rules); keep them in sync.
+
+- `direction_correction(entity, player_index)` runs on every build event (player, robot, space platform, script, clone) and on player rotate/flip. `player_index` is nil for non-player builds. Ghosts are handled via `ghost_type` / `ghost_prototype`.
+  - `entity_not_allowed_south` types facing south get one `entity.rotate()` (2×1 entities and loaders flip 180°, loaders also swap input/output); still south → `remove_entity`.
+  - Inserters: custom-vector inserters get pickup/drop swapped if pickup is north and drop south; others are rotated.
+  - Rails: `rail_track_types` other than east-facing `straight-rail` are removed.
+  - `remove_entity` mines back to the player, or for robot/script builds mines into a temp inventory and spills it.
 - `squash_undo_actions` merges the mod's own rotate/mine into the player's build undo step, so one Ctrl+Z undoes both.
-- Player movement: when the setting is off, `on_player_changed_position` teleports the player back to their last per-surface y (`storage.player_positions[player][surface]`), with smoke and a 1% chance of a lore line.
+- Logistics rule (`update_requesters`, every 180 ticks): requesters are registered in `storage.requesters` on build (and by a scan in `on_init`/`on_configuration_changed`), start disabled, and are enabled only if not south of the northernmost supply source in their network. Gotchas found by testing: disabled points vanish from `network.requester_points` and their `logistic_network` goes invalid (hence the registry and `find_logistic_network_by_position`); requester chests also have a provider point (trash) that must not count as a source.
+- Player movement: when the setting is off, `push_back_south_step` moves the character (or driven car/spidertron) back to the last per-surface y (`storage.player_positions[player][surface]`), keeping sideways movement only if `find_non_colliding_position` finds a spot (plain `teleport` happily lands inside walls). Respawn and surface change reset tracking; remote view and trains are ignored.
 
 ## Testing
 
-No automated tests. Headless smoke check that the mod loads and runs on the installed game (`D:\SteamLibrary\steamapps\common\Factorio`), using a scratch mod dir holding a copy of this mod:
+`bash tests/run.sh` (exit 0 = pass; `FACTORIO=<exe>` overrides the default `D:\SteamLibrary\steamapps\common\Factorio\bin\x64\factorio.exe`). It appends [tests/test.lua](tests/test.lua) to control.lua in a scratch mod dir, so tests call the mod's locals directly, then creates a save and runs 10 ticks headless. Event wiring and anything needing a real player (undo merging, GUI) isn't covered; check those in-game.
 
-```
-factorio.exe --mod-directory <scratch>/mods --create <scratch>/t.zip
-factorio.exe --mod-directory <scratch>/mods --benchmark <scratch>/t.zip --benchmark-ticks 60 --disable-audio
-```
-
-This doesn't fire build/rotate events; those need an in-game check. API docs for the installed version are in `<Factorio>/doc-html/`, and the API changes per version are in `<Factorio>/data/changelog.txt`.
+API docs for the installed version are in `<Factorio>/doc-html/`, and API changes per version are in `<Factorio>/data/changelog.txt`.
 
 ## Releasing
 
